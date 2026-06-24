@@ -373,7 +373,7 @@
             outline: none; 
             transition: all 0.2s ease; 
             min-height: 44px; 
-            max-height: 120px; /* cohérence */
+            max-height: 120px;
             background: var(--bg-secondary); 
             color: var(--text-primary); 
             line-height: 1.4; 
@@ -604,10 +604,9 @@
     }
 
     function formatMarkdown(text) {
-        // Échapper le HTML
         let html = escapeHTML(text);
 
-        // Protéger les blocs de code (```) en les remplaçant par des placeholders
+        // Protéger les blocs de code (```)
         const codeBlocks = [];
         html = html.replace(/```([\s\S]*?)```/g, function(match, code) {
             const id = `__CODEBLOCK_${codeBlocks.length}__`;
@@ -615,14 +614,14 @@
             return id;
         });
 
-        // Traiter les blocs de code inline `code`
+        // Inline code
         html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
 
         // Gras et italique
         html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-        // Traiter les listes et les sauts de ligne
+        // Listes et sauts de ligne
         let lines = html.split('\n');
         let inList = false;
         let processedLines = [];
@@ -650,17 +649,12 @@
         if (inList) processedLines.push('</ul>');
         html = processedLines.join('\n');
 
-        // Convertir les retours à la ligne en <br> (sauf si déjà dans des balises)
-        // On va remplacer les \n par <br>, mais on évite de casser les balises <ul> et <pre>.
-        // On va simplement faire un remplacement global mais on va d'abord protéger les balises <ul> et <pre> avec des placeholders.
-        // Comme on a déjà nos balises, on peut remplacer les \n restants par <br>.
-        // Mais il peut y avoir des \n dans les blocs de code (on les a protégés), donc on ne les touche pas.
+        // Remplacer les retours à la ligne par <br> (sauf dans les blocs de code déjà protégés)
         html = html.replace(/\n/g, '<br>');
 
         // Réinsérer les blocs de code
         codeBlocks.forEach((code, index) => {
             const id = `__CODEBLOCK_${index}__`;
-            // On garde le code tel quel avec ses sauts de ligne
             html = html.replace(id, `<pre><code>${code}</code></pre>`);
         });
 
@@ -719,6 +713,7 @@
         showToast('Configuration enregistrée !', 'success');
     }
 
+    // ===== NOUVELLE FONCTION DE TEST (POST /chat/completions) =====
     async function testConnection() {
         const btn = document.getElementById('testConnBtn');
         const status = document.getElementById('testConnStatus');
@@ -726,26 +721,54 @@
         const key = document.getElementById('apiKeyInput').value.trim();
 
         if (!rawUrl || !key) {
-            status.style.display = 'block'; status.style.color = '#ef4444';
-            status.innerHTML = '❌ URL et clé requises.'; return;
+            status.style.display = 'block';
+            status.style.color = '#ef4444';
+            status.innerHTML = '❌ URL et clé requises.';
+            return;
         }
 
         btn.disabled = true;
-        status.style.display = 'block'; status.style.color = 'var(--text-secondary)';
+        status.style.display = 'block';
+        status.style.color = 'var(--text-secondary)';
         status.innerHTML = '🔄 Test en cours...';
 
         try {
-            const response = await fetch(`${sanitizeUrl(rawUrl)}/models`, {
-                headers: { 'Authorization': `Bearer ${key}` }
+            const baseUrl = sanitizeUrl(rawUrl);
+            const model = document.getElementById('customModelInput').value.trim() ||
+                           document.getElementById('modelSelectConfig').value ||
+                           'gpt-3.5-turbo';
+
+            const response = await fetch(`${baseUrl}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key}`
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [{ role: 'user', content: 'ping' }],
+                    max_tokens: 1,
+                    stream: false
+                })
             });
+
             if (response.ok) {
-                status.style.color = '#10b981'; status.innerHTML = '✅ Connexion réussie !';
+                const data = await response.json();
+                if (data.choices && data.choices.length > 0) {
+                    status.style.color = '#10b981';
+                    status.innerHTML = '✅ Connexion réussie ! (réponse reçue)';
+                } else {
+                    status.style.color = '#f59e0b';
+                    status.innerHTML = '⚠️ Connexion OK mais réponse inattendue.';
+                }
             } else {
-                status.style.color = '#ef4444'; status.innerHTML = `❌ Échec HTTP ${response.status}`;
+                const errorText = await response.text();
+                status.style.color = '#ef4444';
+                status.innerHTML = `❌ Échec HTTP ${response.status} : ${errorText.slice(0, 100)}`;
             }
         } catch (error) {
             status.style.color = '#ef4444';
-            status.innerHTML = `❌ Erreur CORS ou Réseau. Vérifiez l'URL.`;
+            status.innerHTML = `❌ Erreur CORS ou Réseau. Vérifiez l'URL et le CORS.`;
         } finally {
             btn.disabled = false;
         }
@@ -895,7 +918,7 @@
 
     document.getElementById('inputArea').addEventListener('input', function() {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px'; // aligné avec max-height
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
 
     document.querySelectorAll('.modal-overlay').forEach(modal => {
