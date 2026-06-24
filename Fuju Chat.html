@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <title>🤖 Fugu Chat - Version Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== VARIABLES DE THÈME ET PALETTE DESIGN ===== */
+        :root { 
+            --bg-primary: #ffffff; 
+            --bg-secondary: #f8f9fa; 
+            --bg-chat: #fafafa; 
+            --text-primary: #2d3748; 
+            --text-secondary: #718096; 
+            --border-color: #e2e8f0; 
+            --gradient-start: #667eea; 
+            --gradient-end: #764ba2; 
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            --accent-color: #667eea;
+            --code-bg: #f1f5f9;
+            --code-text: #e11d48;
+        }
+
+        [data-theme="dark"] { 
+            --bg-primary: #111827; 
+            --bg-secondary: #1f2937; 
+            --bg-chat: #0f172a; 
+            --text-primary: #f3f4f6; 
+            --text-secondary: #9ca3af; 
+            --border-color: #374151; 
+            --gradient-start: #3b82f6; 
+            --gradient-end: #8b5cf6; 
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
+            --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.5), 0 10px 10px -5px rgba(0,0,0,0.4);
+            --accent-color: #3b82f6;
+            --code-bg: #1e293b;
+            --code-text: #fda4af;
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); 
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 0; 
+            overflow: hidden;
+        }
+
+        .container { 
+            width: 100%; 
+            height: 100vh;
+            height: 100dvh;
+            background: var(--bg-primary); 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            transition: background 0.3s ease, color 0.3s ease; 
+            border-radius: 0; 
+        }
+
+        @media (min-width: 768px) { 
+            .container { 
+                height: 92vh; 
+                max-width: 900px;
+                border-radius: var(--radius-lg); 
+                margin: 20px auto; 
+                box-shadow: var(--shadow-lg); 
+            } 
+        }
+        
+        .header { 
+            padding: 12px 16px; 
+            background: var(--bg-primary); 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-shrink: 0; 
+            gap: 8px; 
+            z-index: 10;
+        }
+
+        .header h1 { 
+            font-size: 18px; 
+            font-weight: 700;
+            color: var(--text-primary); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            white-space: nowrap;
+        }
+
+        .header h1 i {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions { 
+            display: flex; 
+            gap: 6px; 
+            align-items: center; 
+            flex-wrap: nowrap;
+        }
+
+        .header-actions select { 
+            padding: 6px 10px; 
+            border-radius: var(--radius-md); 
+            border: 1px solid var(--border-color); 
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            font-size: 12px; 
+            font-weight: 500;
+            cursor: pointer; 
+            outline: none;
+            max-width: 100px;
+            text-overflow: ellipsis;
+            transition: all 0.2s ease; 
+        }
+
+        .btn-icon { 
+            background: var(--bg-secondary); 
+            border: 1px solid var(--border-color); 
+            border-radius: var(--radius-md);
+            font-size: 15px; 
+            color: var(--text-secondary); 
+            padding: 8px; 
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            min-height: 36px;
+        }
+
+        button:active, .btn-icon:active, .suggestion-btn:active {
+            transform: scale(0.92) !important;
+            opacity: 0.8;
+        }
+
+        .btn-icon:hover {
+            color: var(--text-primary);
+            background: var(--border-color);
+        }
+        
+        .chat-area { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 16px; 
+            background: var(--bg-chat); 
+            transition: background 0.3s ease; 
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        .message { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            max-width: 100%;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        .message.user { 
+            flex-direction: row-reverse; 
+        }
+
+        .message .avatar { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 16px; 
+            flex-shrink: 0; 
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message.user .avatar {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); 
+            color: #fff; 
+        }
+
+        .message.assistant .avatar { 
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .message .content { 
+            max-width: 85%; 
+            padding: 12px 14px; 
+            border-radius: var(--radius-md); 
+            line-height: 1.5; 
+            font-size: 14px;
+            word-wrap: break-word; 
+            white-space: pre-wrap;
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            border: 1px solid var(--border-color); 
+            box-shadow: var(--shadow-sm);
+        }
+
+        @media (min-width: 768px) {
+            .message .content { font-size: 15px; max-width: 80%; }
+        }
+
+        .message.user .content { 
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); 
+            color: #ffffff; 
+            border: none; 
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .content {
+            border-top-left-radius: 4px;
+        }
+        
+        .content p { margin-bottom: 8px; }
+        .content p:last-child { margin-bottom: 0; }
+
+        .content pre { 
+            background: var(--code-bg); 
+            padding: 12px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            margin: 10px 0; 
+            border: 1px solid var(--border-color); 
+        }
+
+        .content code { 
+            font-family: 'Fira Code', Consolas, Monaco, monospace; 
+            background: var(--code-bg); 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-size: 0.85em; 
+            color: var(--code-text); 
+        }
+
+        .content pre code { 
+            padding: 0; 
+            background: transparent; 
+            font-size: 12px; 
+            color: var(--text-primary); 
+            display: block; 
+            white-space: pre;
+        }
+
+        .content strong { font-weight: 700; }
+        .content ul, .content ol { margin-left: 20px; margin-bottom: 8px; }
+
+        .typing-indicator { 
+            display: flex; 
+            gap: 5px; 
+            padding: 6px 4px; 
+            align-items: center;
+        }
+
+        .typing-indicator span { 
+            width: 8px; 
+            height: 8px; 
+            background: var(--text-secondary); 
+            border-radius: 50%; 
+            animation: typing 1.4s infinite ease-in-out; 
+            opacity: 0.6;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing { 
+            0%, 60%, 100% { transform: translateY(0); } 
+            30% { transform: translateY(-6px); } 
+        }
+
+        @keyframes slideIn { 
+            from { opacity: 0; transform: translateY(12px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .empty-state { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            color: var(--text-secondary); 
+            text-align: center; 
+            padding: 20px; 
+        }
+
+        .empty-state i { 
+            font-size: 48px; 
+            margin-bottom: 16px; 
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.8; 
+        }
+
+        .empty-state h3 { 
+            color: var(--text-primary); 
+            font-size: 18px;
+            margin-bottom: 8px; 
+            font-weight: 600;
+        }
+
+        .empty-state p { font-size: 14px; line-height: 1.5; }
+        
+        .suggestions { 
+            padding: 10px 16px; 
+            display: flex; 
+            gap: 8px; 
+            flex-shrink: 0; 
+            overflow-x: auto; 
+            background: var(--bg-primary); 
+            border-top: 1px solid var(--border-color); 
+            scrollbar-width: none; 
+            -webkit-overflow-scrolling: touch;
+        }
+        .suggestions::-webkit-scrollbar { display: none; }
+
+        .suggestion-btn { 
+            padding: 8px 14px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 20px; 
+            background: var(--bg-secondary); 
+            color: var(--text-secondary); 
+            font-size: 12px; 
+            font-weight: 500;
+            cursor: pointer; 
+            white-space: nowrap; 
+            transition: all 0.2s ease; 
+        }
+        
+        .input-area { 
+            padding: 12px 16px; 
+            border-top: 1px solid var(--border-color); 
+            display: flex; 
+            gap: 8px; 
+            background: var(--bg-primary); 
+            flex-shrink: 0; 
+            align-items: flex-end;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        }
+
+        .input-area textarea { 
+            flex: 1; 
+            padding: 12px 14px; 
+            border: 1.5px solid var(--border-color); 
+            border-radius: var(--radius-md); 
+            font-size: 15px; 
+            font-family: inherit; 
+            resize: none; 
+            outline: none; 
+            transition: all 0.2s ease; 
+            min-height: 44px; 
+            max-height: 120px; /* cohérence */
+            background: var(--bg-secondary); 
+            color: var(--text-primary); 
+            line-height: 1.4; 
+        }
+
+        .input-area textarea:focus { 
+            border-color: var(--accent-color); 
+            background: var(--bg-primary);
+        }
+
+        .input-area .send-btn { 
+            padding: 12px 16px; 
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); 
+            color: #ffffff; 
+            border: none; 
+            border-radius: var(--radius-md); 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            white-space: nowrap; 
+            transition: all 0.2s ease; 
+            height: 46px;
+        }
+
+        .input-area .send-btn:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+        }
+        
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(4px);
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 9999; 
+            padding: 20px; 
+        }
+
+        .modal { 
+            background: var(--bg-primary); 
+            border-radius: var(--radius-lg); 
+            padding: 24px; 
+            max-width: 440px; 
+            width: 100%; 
+            box-shadow: var(--shadow-lg); 
+            color: var(--text-primary); 
+            border: 1px solid var(--border-color);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 { margin-bottom: 8px; font-size: 18px; }
+        .modal p { font-size: 13px; margin-bottom: 16px; color: var(--text-secondary); }
+        .modal label { display: block; margin: 12px 0 6px; font-weight: 600; font-size: 13px; }
+        
+        .modal input, .modal select { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1.5px solid var(--border-color); 
+            border-radius: 10px; 
+            font-size: 14px; 
+            background: var(--bg-secondary); 
+            color: var(--text-primary); 
+        }
+
+        .test-connection-container {
+            margin-top: 15px; padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px dashed var(--border-color); border-radius: 10px;
+        }
+
+        .btn-test {
+            width: 100%; padding: 10px; font-size: 13px; font-weight: 600;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            color: var(--text-primary); border-radius: 8px; cursor: pointer;
+        }
+
+        #testConnStatus { margin-top: 8px; font-size: 12px; font-weight: 500; white-space: pre-wrap; line-height: 1.4; }
+
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .modal button { 
+            flex: 1; padding: 12px; font-size: 14px; font-weight: 600; 
+            border-radius: 10px; border: none; cursor: pointer; 
+        }
+        .modal button.btn-save { background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); color: #fff; }
+        .modal button.btn-cancel { background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); }
+        
+        .toast-container {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 10000; display: flex; flex-direction: column; gap: 8px;
+            pointer-events: none; width: 90%; max-width: 380px;
+        }
+        .toast {
+            background: var(--bg-primary); color: var(--text-primary);
+            border: 1px solid var(--border-color); padding: 12px 16px;
+            border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+            display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500;
+            animation: toastSlideIn 0.3s, toastFadeOut 0.3s 3s forwards;
+        }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.info { border-left: 4px solid var(--accent-color); }
+
+        @keyframes toastSlideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes toastFadeOut { to { transform: translateY(-10px); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="header">
+        <h1><i class="fas fa-robot"></i> Fugu Chat</h1>
+        <div class="header-actions">
+            <select id="modelSelectHeader" onchange="changeModelFromHeader()">
+                <option value="fugu-ultra">Fugu Ultra</option>
+                <option value="saka">Saka</option>
+                <option value="Chat">Chat</option>
+                <option value="sakana">Sakana</option>
+                <option value="Merlin">Merlin</option>
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5</option>
+            </select>
+            <button class="btn-icon" onclick="toggleTheme()" title="Thème"><i class="fas fa-moon" id="themeIcon"></i></button>
+            <button class="btn-icon" onclick="triggerClearConfirm()" title="Effacer la conversation"><i class="fas fa-trash"></i></button>
+            <button class="btn-icon" onclick="exportChat()" title="Exporter"><i class="fas fa-download"></i></button>
+            <button class="btn-icon" onclick="showConfigModal()" title="Configuration de l'API"><i class="fas fa-cog"></i></button>
+        </div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+        <div class="empty-state" id="emptyState">
+            <i class="fas fa-comment-dots"></i>
+            <h3>Bienvenue sur Fugu Chat !</h3>
+            <p>Configurez votre clé API ainsi que l'URL de base pour initier l'échange.</p>
+        </div>
+    </div>
+
+    <div class="suggestions">
+        <button class="suggestion-btn" onclick="sendQuick('Explique la relativité générale simplement')">Relativité</button>
+        <button class="suggestion-btn" onclick="sendQuick('Donne-moi 3 idées de projets de programmation')">Idées Projets</button>
+        <button class="suggestion-btn" onclick="sendQuick('Rédige un court poème sur la beauté du code')">Poème Code</button>
+        <button class="suggestion-btn" onclick="sendQuick('Quelles sont les meilleures méthodes pour apprendre une langue ?')">Langues</button>
+    </div>
+
+    <div class="input-area">
+        <textarea id="inputArea" rows="1" placeholder="Posez votre question..." onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i> <span class="hide-mobile">Envoyer</span>
+        </button>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="configModal" style="display:none;">
+    <div class="modal">
+        <h2>⚙️ Configuration API</h2>
+        <p>Renseignez vos identifiants de connexion. Les requêtes seront émises de manière sécurisée.</p>
+        
+        <label for="apiUrlInput">URL de base de l'API</label>
+        <input type="url" id="apiUrlInput" placeholder="https://api.openai.com/v1">
+        
+        <label for="apiKeyInput">Clé API</label>
+        <input type="password" id="apiKeyInput" placeholder="Saisir la clé (Bearer token)">
+        
+        <label for="modelSelectConfig">Modèle par défaut</label>
+        <select id="modelSelectConfig">
+            <option value="fugu-ultra">Fugu Ultra</option>
+            <option value="saka">Saka</option>
+            <option value="Chat">Chat</option>
+            <option value="sakana">Sakana</option>
+            <option value="Merlin">Merlin</option>
+            <option value="gpt-4">GPT-4</option>
+            <option value="gpt-3.5-turbo">GPT-3.5</option>
+        </select>
+        
+        <div style="margin-top:8px;">
+            <input type="text" id="customModelInput" placeholder="Saisir un autre nom de modèle...">
+        </div>
+
+        <div class="test-connection-container">
+            <button class="btn-test" id="testConnBtn" onclick="testConnection()">⚡ Tester la connexion</button>
+            <div id="testConnStatus" style="display:none;"></div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeConfigModal()">Annuler</button>
+            <button class="btn-save" onclick="saveConfig()">Sauvegarder</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal" style="display:none;">
+    <div class="modal">
+        <h2>🗑️ Confirmer l'action</h2>
+        <p id="confirmMessage">Êtes-vous certain de vouloir vider l'ensemble de l'historique de cette discussion ?</p>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeConfirmModal()">Conserver</button>
+            <button style="background: #ef4444; color: white;" onclick="executeConfirmedAction()">Effacer tout</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== ÉTAT CENTRALISÉ =====
+    let messages = [];
+    let isStreaming = false;
+    let currentTheme = localStorage.getItem('fugu-theme') || 'light';
+    let pendingConfirmAction = null;
+
+    let apiConfig = {
+        url: localStorage.getItem('api-url') || '',
+        key: localStorage.getItem('api-key') || '',
+        model: localStorage.getItem('api-model') || 'fugu-ultra'
+    };
+
+    // ===== PARSEUR MARKDOWN CORRIGÉ =====
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
+    }
+
+    function formatMarkdown(text) {
+        // Échapper le HTML
+        let html = escapeHTML(text);
+
+        // Protéger les blocs de code (```) en les remplaçant par des placeholders
+        const codeBlocks = [];
+        html = html.replace(/```([\s\S]*?)```/g, function(match, code) {
+            const id = `__CODEBLOCK_${codeBlocks.length}__`;
+            codeBlocks.push(code);
+            return id;
+        });
+
+        // Traiter les blocs de code inline `code`
+        html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+        // Gras et italique
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+        // Traiter les listes et les sauts de ligne
+        let lines = html.split('\n');
+        let inList = false;
+        let processedLines = [];
+        for (let line of lines) {
+            let trimmed = line.trim();
+            if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                let content = trimmed.substring(2);
+                if (!inList) {
+                    processedLines.push('<ul>');
+                    inList = true;
+                }
+                processedLines.push('<li>' + content + '</li>');
+            } else {
+                if (inList) {
+                    processedLines.push('</ul>');
+                    inList = false;
+                }
+                if (trimmed === '') {
+                    processedLines.push('<br>');
+                } else {
+                    processedLines.push(line);
+                }
+            }
+        }
+        if (inList) processedLines.push('</ul>');
+        html = processedLines.join('\n');
+
+        // Convertir les retours à la ligne en <br> (sauf si déjà dans des balises)
+        // On va remplacer les \n par <br>, mais on évite de casser les balises <ul> et <pre>.
+        // On va simplement faire un remplacement global mais on va d'abord protéger les balises <ul> et <pre> avec des placeholders.
+        // Comme on a déjà nos balises, on peut remplacer les \n restants par <br>.
+        // Mais il peut y avoir des \n dans les blocs de code (on les a protégés), donc on ne les touche pas.
+        html = html.replace(/\n/g, '<br>');
+
+        // Réinsérer les blocs de code
+        codeBlocks.forEach((code, index) => {
+            const id = `__CODEBLOCK_${index}__`;
+            // On garde le code tel quel avec ses sauts de ligne
+            html = html.replace(id, `<pre><code>${code}</code></pre>`);
+        });
+
+        return html;
+    }
+
+    // ===== TOAST =====
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        let iconClass = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+        toast.innerHTML = `<i class="fas ${iconClass}"></i> <span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3300);
+    }
+
+    // ===== MODALES =====
+    function showConfigModal() {
+        document.getElementById('apiUrlInput').value = apiConfig.url;
+        document.getElementById('apiKeyInput').value = apiConfig.key;
+        document.getElementById('modelSelectConfig').value = apiConfig.model;
+        document.getElementById('customModelInput').value = '';
+        document.getElementById('testConnStatus').style.display = 'none';
+        document.getElementById('configModal').style.display = 'flex';
+    }
+
+    function closeConfigModal() {
+        if (!apiConfig.url || !apiConfig.key) showToast('Configuration API requise.', 'info');
+        document.getElementById('configModal').style.display = 'none';
+    }
+
+    function sanitizeUrl(url) {
+        let baseUrl = url.trim().replace(/\/+$/, '');
+        if (baseUrl.endsWith('/chat/completions')) baseUrl = baseUrl.replace('/chat/completions', '');
+        return baseUrl.replace(/\/+$/, '');
+    }
+
+    function saveConfig() {
+        const rawUrl = document.getElementById('apiUrlInput').value;
+        const key = document.getElementById('apiKeyInput').value.trim();
+        let model = document.getElementById('customModelInput').value.trim() || document.getElementById('modelSelectConfig').value;
+
+        if (!rawUrl || !key) return showToast('Veuillez remplir l\'URL et la clé.', 'error');
+
+        apiConfig.url = sanitizeUrl(rawUrl);
+        apiConfig.key = key;
+        apiConfig.model = model;
+
+        localStorage.setItem('api-url', apiConfig.url);
+        localStorage.setItem('api-key', apiConfig.key);
+        localStorage.setItem('api-model', apiConfig.model);
+
+        updateModelSelects(model);
+        document.getElementById('configModal').style.display = 'none';
+        showToast('Configuration enregistrée !', 'success');
+    }
+
+    async function testConnection() {
+        const btn = document.getElementById('testConnBtn');
+        const status = document.getElementById('testConnStatus');
+        const rawUrl = document.getElementById('apiUrlInput').value;
+        const key = document.getElementById('apiKeyInput').value.trim();
+
+        if (!rawUrl || !key) {
+            status.style.display = 'block'; status.style.color = '#ef4444';
+            status.innerHTML = '❌ URL et clé requises.'; return;
+        }
+
+        btn.disabled = true;
+        status.style.display = 'block'; status.style.color = 'var(--text-secondary)';
+        status.innerHTML = '🔄 Test en cours...';
+
+        try {
+            const response = await fetch(`${sanitizeUrl(rawUrl)}/models`, {
+                headers: { 'Authorization': `Bearer ${key}` }
+            });
+            if (response.ok) {
+                status.style.color = '#10b981'; status.innerHTML = '✅ Connexion réussie !';
+            } else {
+                status.style.color = '#ef4444'; status.innerHTML = `❌ Échec HTTP ${response.status}`;
+            }
+        } catch (error) {
+            status.style.color = '#ef4444';
+            status.innerHTML = `❌ Erreur CORS ou Réseau. Vérifiez l'URL.`;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function updateModelSelects(modelValue) {
+        ['modelSelectConfig', 'modelSelectHeader'].forEach(id => {
+            const select = document.getElementById(id);
+            if (!select) return;
+            if (!Array.from(select.options).some(o => o.value === modelValue)) {
+                select.appendChild(new Option(modelValue, modelValue));
+            }
+            select.value = modelValue;
+        });
+    }
+
+    function changeModelFromHeader() {
+        const val = document.getElementById('modelSelectHeader').value;
+        apiConfig.model = val;
+        localStorage.setItem('api-model', val);
+        document.getElementById('modelSelectConfig').value = val;
+        showToast(`Modèle : ${val}`, 'info');
+    }
+
+    // ===== CHAT =====
+    function renderMessages() {
+        const chatArea = document.getElementById('chatArea');
+        chatArea.innerHTML = '';
+        if (!messages.length) {
+            chatArea.innerHTML = `<div class="empty-state"><i class="fas fa-comment-dots"></i><h3>Bienvenue !</h3><p>Posez votre question ci-dessous.</p></div>`;
+            return;
+        }
+        messages.forEach((msg) => {
+            if (msg.content === '' && msg.role === 'assistant' && isStreaming && msg === messages[messages.length - 1]) return;
+            const div = document.createElement('div');
+            div.className = `message ${msg.role}`;
+            div.innerHTML = `<div class="avatar">${msg.role === 'user' ? '👤' : '🤖'}</div><div class="content">${msg.role === 'user' ? escapeHTML(msg.content) : formatMarkdown(msg.content)}</div>`;
+            chatArea.appendChild(div);
+        });
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function addMessage(role, content) {
+        messages.push({ role, content });
+        localStorage.setItem('fugu-messages', JSON.stringify(messages));
+        renderMessages();
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('inputArea');
+        const text = input.value.trim();
+        if (!text || isStreaming) return;
+        
+        input.value = ''; input.style.height = 'auto';
+        if (!apiConfig.url || !apiConfig.key) return showConfigModal();
+
+        addMessage('user', text);
+        messages.push({ role: 'assistant', content: '' });
+        renderMessages();
+        
+        const lastMsgContainer = document.querySelector('.message.assistant:last-child .content');
+        if (lastMsgContainer) lastMsgContainer.innerHTML = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+
+        isStreaming = true; document.getElementById('sendBtn').disabled = true;
+
+        try {
+            const response = await fetch(`${apiConfig.url}/chat/completions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiConfig.key}` },
+                body: JSON.stringify({ model: apiConfig.model, messages: messages.slice(0, -1), stream: true })
+            });
+
+            if (!response.ok) throw new Error(`Erreur ${response.status}`);
+            
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullContent = '', buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                for (let line of lines) {
+                    if (line.trim().startsWith('data: ')) {
+                        let data = line.trim().slice(6);
+                        if (data === '[DONE]') continue;
+                        try {
+                            const parsed = JSON.parse(data);
+                            const delta = parsed.choices[0]?.delta?.content;
+                            if (delta) {
+                                fullContent += delta;
+                                if (lastMsgContainer) lastMsgContainer.innerHTML = formatMarkdown(fullContent);
+                                document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
+                            }
+                        } catch (e) {}
+                    }
+                }
+            }
+            messages[messages.length - 1].content = fullContent;
+            localStorage.setItem('fugu-messages', JSON.stringify(messages));
+        } catch (error) {
+            if (lastMsgContainer) lastMsgContainer.innerHTML = `<span style="color:#ef4444">Échec: ${error.message}</span>`;
+            messages.pop(); localStorage.setItem('fugu-messages', JSON.stringify(messages));
+            showToast(error.message, 'error');
+        }
+        isStreaming = false; document.getElementById('sendBtn').disabled = false;
+        renderMessages();
+    }
+
+    function sendQuick(text) {
+        if (isStreaming) return;
+        document.getElementById('inputArea').value = text;
+        sendMessage();
+    }
+
+    function handleKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            if (window.innerWidth > 768) { e.preventDefault(); sendMessage(); }
+        }
+    }
+
+    function triggerClearConfirm() {
+        if (!messages.length) return showToast('Aucun message.', 'info');
+        pendingConfirmAction = () => { messages = []; localStorage.setItem('fugu-messages', '[]'); renderMessages(); showToast('Effacé', 'success'); };
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+
+    function closeConfirmModal() { document.getElementById('confirmModal').style.display = 'none'; pendingConfirmAction = null; }
+    function executeConfirmedAction() { if (pendingConfirmAction) pendingConfirmAction(); closeConfirmModal(); }
+
+    function exportChat() {
+        if (!messages.length) return showToast('Rien à exporter.', 'info');
+        const text = messages.map(m => `${m.role === 'user' ? '👤' : '🤖'}:\n${m.content}`).join('\n\n---\n\n');
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `chat_${new Date().toISOString().slice(0,10)}.txt`; a.click();
+    }
+
+    function toggleTheme() {
+        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        document.getElementById('themeIcon').className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        localStorage.setItem('fugu-theme', currentTheme);
+    }
+
+    document.getElementById('inputArea').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px'; // aligné avec max-height
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                if (this.id === 'configModal' && apiConfig.url && apiConfig.key) closeConfigModal();
+                else if (this.id === 'confirmModal') closeConfirmModal();
+            }
+        });
+    });
+
+    (function init() {
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        document.getElementById('themeIcon').className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        if (apiConfig.model) updateModelSelects(apiConfig.model);
+        try { const saved = localStorage.getItem('fugu-messages'); if (saved) { messages = JSON.parse(saved); renderMessages(); } } catch(e) {}
+        if (!apiConfig.url || !apiConfig.key) showConfigModal();
+    })();
+</script>
+</body>
+</html>
